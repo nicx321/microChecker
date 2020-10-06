@@ -1,8 +1,9 @@
 import subprocess
-import os
-from termcolor import colored
-import subprocess
 from threading import Timer
+import os
+import sys
+
+from termcolor import colored
 
 vysledek = []
 optVysledek = None
@@ -13,7 +14,12 @@ if not os.path.isfile("main.c"):
     print(colored("nenalezen soubor \"main.c\"", "red"))
     exit()
 
-proc = subprocess.Popen(["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always"],
+cmd = ["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always"]
+if len(sys.argv) > 1:
+    if sys.argv[1] == "-Final":
+        cmd = ["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always", "-pedantic", "-Wall", "-Werror", "-std=c99", "-O2"]
+
+proc = subprocess.Popen(cmd,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE
@@ -74,8 +80,16 @@ def run(name, args):
     if TIMEOUT:
         return["T", ["", ""], ["", ""]]
 
-    outData = stdout_value.decode().replace("\r\n", "\n")
-    ErrorData = stderr_value.decode().replace("\r\n", "\n")
+    try:
+        outData = stdout_value.decode().replace("\r\n", "\n")
+    except UnicodeDecodeError:
+        print(stdout_value)
+
+    try:
+        ErrorData = stderr_value.decode().replace("\r\n", "\n")
+    except UnicodeDecodeError:
+        print(ErrorData)
+    
 
     if not os.path.isfile("./data/"+name+".out"):
         print("nenalezen soubor \"" + name + ".out\"")
@@ -140,7 +154,14 @@ def cmpPrint(A, B, name, Datatype):
                         print(colored(A[j-1], "white", "on_red"), end="")
                     foundA = True
                 else:
-                    print(A[j-1], end="")
+                    if(A[j-1] == "\n"):
+                        print(colored("n", "cyan"), end = "")
+                    elif(A[j-1] == "\a"):
+                        print(colored("a", "cyan"), end = "")
+                    elif(A[j-1] == "\t"):
+                        print(colored("t", "cyan"), end = "")
+                    else:
+                        print(A[j-1], end="")
             else:
                 print(colored(" ", "white", 'on_yellow'), end="")
             if (j % 30) == 0:
@@ -210,7 +231,7 @@ def prettyTable(vysledek):
                 if str(vysledek[i][0]) == str(optVysledek[i][0]):
                     print(vysledek[i][0], end="\t|")
                 else:
-                    print(colored(str(vysledek[i][0])+" ("+str(optVysledek[i][0])+")", 'red'), end="\t|")
+                    print(colored(str(vysledek[i][0])+"("+str(optVysledek[i][0])+")", 'red'), end="\t|")
                     Fail += 1
             else:
                 if vysledek[i][0] == 0:
@@ -266,5 +287,5 @@ if Fail == 0:
 | (_) |   < 
  \\___/|_|\\_\\""", "green"))
 
-if Fail >= 2:
+if Fail >= 4:
     print(colored("\n\t(╯°□°）╯︵ ┻━┻", "red"))
