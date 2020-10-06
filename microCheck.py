@@ -1,11 +1,13 @@
 import subprocess
 import os
 from termcolor import colored
+import subprocess
+from threading import Timer
 
 vysledek = []
 optVysledek = None
 
-Fail = False
+Fail = 0
 
 if not os.path.isfile("main.c"):
     print(colored("nenalezen soubor \"main.c\"", "red"))
@@ -27,7 +29,7 @@ if proc.returncode != 0:
 else:
     if "warning:" in vystup:
         print(colored("OK-Varování", "yellow", "on_magenta"))
-        Fail = True
+        Fail += 1
     else:
         print(colored("kompilace OK", "green"))
 
@@ -43,21 +45,34 @@ else:
     for line in conf: 
         optVysledek.append(line.replace("\n", "").split(" "))
 
-def run(name):
+def run(name, args):
     readData = open("./data/"+name+".in", "r")
     data = readData.read()
     readData.close()
 
-    proc = subprocess.Popen("main.exe",
-                        shell=True,
+    proc = subprocess.Popen("main.exe "+args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         )
+    global TIMEOUT
+    TIMEOUT = False
+    def kill(x):
+        global TIMEOUT, Fail
+        x.kill()
+        TIMEOUT = True
+        Fail += 1
 
-    stdout_value, stderr_value = proc.communicate(data.encode())
+    my_timer = Timer(5, kill, [proc])
+    try:
+        my_timer.start()
+        stdout_value, stderr_value = proc.communicate(data.encode())
+    finally:
+        my_timer.cancel()
 
     ret = proc.returncode
+    if TIMEOUT:
+        return["T", ["", ""], ["", ""]]
 
     outData = stdout_value.decode().replace("\r\n", "\n")
     ErrorData = stderr_value.decode().replace("\r\n", "\n")
@@ -81,7 +96,7 @@ def run(name):
 def cmpPrint(A, B, name, Datatype):
     global Fail
     if A != B:
-        Fail = True
+        Fail += 1
         print(colored(name.upper()+ " > " + Datatype, "red"))
         print(" "*12, end="")
         print("výstup", end="")
@@ -105,20 +120,27 @@ def cmpPrint(A, B, name, Datatype):
         foundB = False
         for j in range(1, Clen+1):
             if j-1 < Alen:
-                if(A[j-1] == "\n"):
-                    print(colored("n", "cyan"), end = "")
-                elif(A[j-1] == "\a"):
-                    print(colored("a", "cyan"), end = "")
-                elif(A[j-1] == "\t"):
-                    print(colored("t", "cyan"), end = "")
-                else:
-                    if j-1 >= Blen:
-                        print(colored(A[j-1], "yellow"), end="")
-                    elif A[j-1] != B[j-1] and not foundA:
-                        print(colored(A[j-1], "white", "on_red"), end="")
-                        foundA = True
+                if j-1 >= Blen:
+                    if(A[j-1] == "\n"):
+                        print(colored("n", "cyan"), end = "")
+                    elif(A[j-1] == "\a"):
+                        print(colored("a", "cyan"), end = "")
+                    elif(A[j-1] == "\t"):
+                        print(colored("t", "cyan"), end = "")
                     else:
-                        print(A[j-1], end="")
+                        print(colored(A[j-1], "yellow"), end="")
+                elif A[j-1] != B[j-1] and not foundA:
+                    if(A[j-1] == "\n"):
+                        print(colored("n", "cyan", "on_red"), end = "")
+                    elif(A[j-1] == "\a"):
+                        print(colored("a", "cyan", "on_red"), end = "")
+                    elif(A[j-1] == "\t"):
+                        print(colored("t", "cyan", "on_red"), end = "")
+                    else:
+                        print(colored(A[j-1], "white", "on_red"), end="")
+                    foundA = True
+                else:
+                    print(A[j-1], end="")
             else:
                 print(colored(" ", "white", 'on_yellow'), end="")
             if (j % 30) == 0:
@@ -183,32 +205,35 @@ def prettyTable(vysledek):
     print("---------------------------------")
     for i, name in enumerate(names):
         print(name, end="\t|")
-        if optVysledek != None:
-            if str(vysledek[i][0]) == str(optVysledek[i][0]):
-                print(vysledek[i][0], end="\t|")
+        if vysledek[i][0] != "T":
+            if optVysledek != None:
+                if str(vysledek[i][0]) == str(optVysledek[i][0]):
+                    print(vysledek[i][0], end="\t|")
+                else:
+                    print(colored(str(vysledek[i][0])+" ("+str(optVysledek[i][0])+")", 'red'), end="\t|")
+                    Fail += 1
             else:
-                print(colored(str(vysledek[i][0])+" ("+str(optVysledek[i][0])+")", 'red'), end="\t|")
-                Fail = True
+                if vysledek[i][0] == 0:
+                    print(colored("0", 'yellow'), end="\t|")
+                else:
+                    print(colored(vysledek[i][0], 'magenta'), end="\t|")
+            if(vysledek[i][1][1] == ""):
+                print("  ---", end="\t|")
+            else:
+                if vysledek[i][1][0]!=vysledek[i][1][1]:
+                    print(colored('FAIL', 'red'), end="\t|")
+                else:
+                    print("OK", end="\t|")
+            if(vysledek[i][2][1] == ""):
+                print("  ---", end="\t|")
+            else:
+                if vysledek[i][2][0]!=vysledek[i][2][1]:
+                    print(colored('FAIL', 'red'), end="\t|")
+                else:
+                    print("OK", end="\t|")
+            print("")
         else:
-            if vysledek[i][0] == 0:
-                print(colored("0", 'yellow'), end="\t|")
-            else:
-                print(colored(vysledek[i][0], 'magenta'), end="\t|")
-        if(vysledek[i][1][1] == ""):
-            print("  ---", end="\t|")
-        else:
-            if vysledek[i][1][0]!=vysledek[i][1][1]:
-                print(colored('FAIL', 'red'), end="\t|")
-            else:
-                print("OK", end="\t|")
-        if(vysledek[i][2][1] == ""):
-            print("  ---", end="\t|")
-        else:
-            if vysledek[i][2][0]!=vysledek[i][2][1]:
-                print(colored('FAIL', 'red'), end="\t|")
-            else:
-                print("OK", end="\t|")
-        print("")
+            print(colored("\t TIMEOUT\t", "red")+"|")
 
 names = []
 for file in os.listdir("./data/"):
@@ -219,14 +244,20 @@ if names == []:
     print("nenalezeny soubory .in")
     exit()
 
-for name in names:
-    vysledek.append(run(name))
+for i, name in enumerate(names):
+    if optVysledek == None:
+        args = ""
+    else:
+        args = ""
+        for arg in optVysledek[i][1:]:
+            args += arg+" "
+    vysledek.append(run(name, args))
 
 ErrHighLight(vysledek)
 
 prettyTable(vysledek)
 
-if Fail == False:
+if Fail == 0:
     print(colored("""
        _    
       | |   
@@ -234,3 +265,6 @@ if Fail == False:
  / _ \\| |/ /
 | (_) |   < 
  \\___/|_|\\_\\""", "green"))
+
+if Fail >= 2:
+    print(colored("\n\t(╯°□°）╯︵ ┻━┻", "red"))
