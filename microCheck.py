@@ -2,22 +2,40 @@ import subprocess
 from threading import Timer
 import os
 import sys
+import pip
 
-from termcolor import colored
+try:
+    from termcolor import colored
+except ImportError:
+    x = input("chybí balíček \"termcolor\" přejete si ho nainstalovat? (y/n): ")
+    if(x in ['y', 'Y']):
+        pip.main(['install', "termcolor"])
+        from termcolor import colored
+    else:
+        print("exiting")
+        exit()
 
+#ARGUMENTY
 vysledek = []
 optVysledek = None
+Exports = []
 
 Fail = 0
 
+for i, arg in enumerate(sys.argv):
+    sys.argv[i] = arg.lower()
+
+if "-cls" in sys.argv:
+    os.system('cls' if os.name=='nt' else 'clear')
+
+#KOMPILACE
 if not os.path.isfile("main.c"):
     print(colored("nenalezen soubor \"main.c\"", "red"))
     exit()
 
 cmd = ["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always"]
-if len(sys.argv) > 1:
-    if sys.argv[1] == "-Final":
-        cmd = ["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always", "-pedantic", "-Wall", "-Werror", "-std=c99", "-O2"]
+if "-final" in sys.argv:
+    cmd = ["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always", "-pedantic", "-Wall", "-Werror", "-std=c99", "-O2"]
 
 proc = subprocess.Popen(cmd,
                         stdin=subprocess.PIPE,
@@ -39,8 +57,9 @@ else:
     else:
         print(colored("kompilace OK", "green"))
 
-print("\n\n")
+print("\n")
 
+#config soubor
 if not os.path.isfile("./data/config.conf"):
     print(colored("\"data/config.conf\" nenalezen", "yellow"))
 else:
@@ -51,6 +70,7 @@ else:
     for line in conf: 
         optVysledek.append(line.replace("\n", "").split(" "))
 
+#KONTROLA
 def run(name, args):
     readData = open("./data/"+name+".in", "r")
     data = readData.read()
@@ -89,7 +109,19 @@ def run(name, args):
         ErrorData = stderr_value.decode().replace("\r\n", "\n")
     except UnicodeDecodeError:
         print(ErrorData)
-    
+
+    if "-exportall" in sys.argv:
+        if not os.path.exists('Exports'):
+            os.mkdir('Exports')
+        global Exports
+        WriteData = open("./Exports/"+name+".out", "w")
+        WriteData.write(outData)
+        WriteData.close()
+        Exports.append("./Exports/"+name+".out")
+        WriteData = open("./Exports/"+name+".err", "w")
+        WriteData.write(ErrorData)
+        WriteData.close()
+        Exports.append("./Exports/"+name+".err")
 
     if not os.path.isfile("./data/"+name+".out"):
         print("nenalezen soubor \"" + name + ".out\"")
@@ -110,6 +142,18 @@ def run(name, args):
 def cmpPrint(A, B, name, Datatype):
     global Fail
     if A != B:
+        if "-export" in sys.argv:
+            if not os.path.exists('Exports'):
+                os.mkdir('Exports')
+            global Exports
+            if Datatype == "stdout":
+                End = ".out"
+            else:
+                End = ".err"
+            WriteData = open("./Exports/"+name+End, "w")
+            WriteData.write(A)
+            WriteData.close()
+            Exports.append("./Exports/"+name+End)
         Fail += 1
         print(colored(name.upper()+ " > " + Datatype, "red"))
         print(" "*12, end="")
@@ -124,9 +168,6 @@ def cmpPrint(A, B, name, Datatype):
         if Clen == 0:
             print("\n\n")
             return
-
-        if Blen == 0:
-            print(" "*30, end="\t\t")
 
         row = 0
         rem = 0
@@ -275,6 +316,12 @@ for i, name in enumerate(names):
     vysledek.append(run(name, args))
 
 ErrHighLight(vysledek)
+
+if Exports != []:
+    print("Exported:")
+    for Export in Exports:
+        print("\t"+Export)
+    print("\n")
 
 prettyTable(vysledek)
 
