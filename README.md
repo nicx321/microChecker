@@ -1,7 +1,7 @@
 # microChecker
 Jednoduchý program pro testování programů v C
 
-## vlastnosti
+## Vlastnosti
   - kompilace C programů s gcc 
   - odeslání dat ze soubor .in do STDIN
   - kontrola STDOUT vůči .out
@@ -51,3 +51,5 @@ Jednoduchý program pro testování programů v C
  - argument "-export" uloží chybné výstupy STDOUT a STDERR do složky Exports
  - argument "-exportall" uloží všechny výstupy STDOUT a STDERR do složky Exports
  - argument "-final" zkompuje program s argumenty: "-pedantic -Wall -Werror -std=c99 -O2"
+ - argument "-nocolor" nebude používat barvy při výpise do konzole
+ - argument "-hex" Kromě znakového výstupu vypíše i porovnání v šestnáctkové soustavě 

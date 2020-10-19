@@ -5,15 +5,23 @@ import sys
 import pip
 
 try:
-    from termcolor import colored
+    import termcolor  
 except ImportError:
     x = input("chybí balíček \"termcolor\" přejete si ho nainstalovat? (y/n): ")
     if(x in ['y', 'Y']):
         pip.main(['install', "termcolor"])
-        from termcolor import colored
+        import termcolor
     else:
         print("exiting")
         exit()
+
+def colored(*args):
+    if '-nocolor' in sys.argv:
+        return args[0]
+    if(len(args)==2):
+        return termcolor.colored(args[0], args[1])
+    if(len(args)==3):
+        return termcolor.colored(args[0], args[1], args[2])
 
 #ARGUMENTY
 vysledek = []
@@ -253,6 +261,51 @@ def cmpPrint(A, B, name, Datatype):
                             print(B[k], end="")
                     else:
                         print(B[k], end="")
+
+        if "-hex" in sys.argv:
+            width = 8
+            print("\n")
+            A_Hex = []
+            B_Hex = []
+            for i in range(Clen):
+                A_Hex.append("..")
+                B_Hex.append("..")
+            for i, char in enumerate(A):
+                A_Hex[i] = hex(ord(char))[2:]
+            while (len(A_Hex))%width != 0:
+                A_Hex.append("  ")
+            for i, char in enumerate(B):
+                B_Hex[i] = hex(ord(char))[2:]
+            while (len(B_Hex))%width != 0:
+                B_Hex.append("  ")
+            
+            FoundA = False
+            FoundB = False
+            print("0000: ", end="")
+            for i in range(max(len(A_Hex), len(B_Hex))):
+                if A_Hex[i] != B_Hex[i] and FoundA == False:
+                    print(colored(A_Hex[i], "red"), end=" ")
+                    FoundA = True
+                else:
+                    print(A_Hex[i], end=" ")
+                if (i+1)%width==0:
+                    if FoundA and not FoundB:
+                        print("    !", end="     ")
+                    else:
+                        print("     ", end="     ")
+                    for y in range(i-width+1, i+1):
+                        if A_Hex[y] != B_Hex[y] and FoundB == False:
+                            print(colored(B_Hex[y], "green"), end=" ")
+                            FoundB = True
+                        else:
+                            if B_Hex[y] == ".." and A_Hex[y] != " ":
+                                print(colored(B_Hex[y], "yellow"), end=" ")
+                            else:
+                                print(B_Hex[y], end=" ")
+                        
+                    print("\n", end="")
+                    if i+1 != max(len(A_Hex), len(B_Hex)):
+                        print('%04d' % (i+1)+": ", end="")
         print("\n\n")
 
 def ErrHighLight(vysledek):
