@@ -9,7 +9,7 @@ Jednoduchý program pro testování programů v C
   - kontrola návratových hodnot
   - kontrola proti nekonečným smyčkám
 
-## Závyslosti
+## Závislosti
  - **gcc**
  - **python** 3.6.4+
     * modul: **termcolor** (instalace při prvním zapnutí)
