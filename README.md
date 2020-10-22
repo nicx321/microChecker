@@ -53,4 +53,4 @@ Jednoduchý program pro testování programů v C
  - argument "-final" zkompuje program s argumenty: "-pedantic -Wall -Werror -std=c99 -O2"
  - argument "-nocolor" nebude používat barvy při výpise do konzole
  - argument "-hex" Kromě znakového výstupu vypíše i porovnání v šestnáctkové soustavě 
- - argument "-forceclang" využije kompilátor Clang i když je dostupný Clang 
+ - argument "-forceclang" využije kompilátor Clang i když je dostupné Gcc 
