@@ -3,6 +3,7 @@ from threading import Timer
 import os
 import sys
 import pip
+from distutils.spawn import find_executable
 
 try:
     import termcolor  
@@ -41,9 +42,36 @@ if not os.path.isfile("main.c"):
     print(colored("nenalezen soubor \"main.c\"", "red"))
     exit()
 
-cmd = ["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always"]
+clang_executable = find_executable('clang')
+gcc_executable = find_executable('gcc')
+compiler = None
+
+if gcc_executable == None and clang_executable == None:
+    print(colored("Nenealezen kompilátor (Clang / Gcc)"), "red")
+    exit()
+elif (gcc_executable != None) and "-forceclang" not in sys.argv:
+    print("Running on gcc")
+    compiler = "Gcc"
+else:
+    print("Running on Clang")
+    compiler = "Clang"
+
+if "-final" in sys.argv and compiler != "Clang":
+    with open("main.c", "r") as file:
+        if file.read()[-1] != "\n":
+            print(colored("Soubor main.c nekončí prázdným řádkem", "red"))
+            exit()
+
+cmd = [compiler, "main.c", "-o", "main.exe"]
+
+if '-nocolor' not in sys.argv:
+    if compiler == "Gcc":
+        cmd.append("-fdiagnostics-color=always")
+    if compiler == "Clang":
+        cmd += ["-fcolor-diagnostics", "-fansi-escape-codes"]
+
 if "-final" in sys.argv:
-    cmd = ["gcc", "main.c", "-o", "main.exe", "-fdiagnostics-color=always", "-pedantic", "-Wall", "-Werror", "-std=c99", "-O2"]
+    cmd += ["-pedantic", "-Wall", "-Werror", "-std=c99", "-O2"]
 
 proc = subprocess.Popen(cmd,
                         stdin=subprocess.PIPE,
