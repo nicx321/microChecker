@@ -54,3 +54,4 @@ Jednoduchý program pro testování programů v C
  - argument "-nocolor" nebude používat barvy při výpise do konzole
  - argument "-hex" Kromě znakového výstupu vypíše i porovnání v šestnáctkové soustavě 
  - argument "-forceclang" využije kompilátor Clang i když je dostupné Gcc 
+ - argument "-keep" Zanechá již zkompilovaný soubor main.exe

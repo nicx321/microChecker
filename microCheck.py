@@ -3,26 +3,8 @@ from threading import Timer
 import os
 import sys
 import pip
-from distutils.spawn import find_executable
-
-try:
-    import termcolor  
-except ImportError:
-    x = input("chybí balíček \"termcolor\" přejete si ho nainstalovat? (y/n): ")
-    if(x in ['y', 'Y']):
-        pip.main(['install', "termcolor"])
-        import termcolor
-    else:
-        print("exiting")
-        exit()
-
-def colored(*args):
-    if '-nocolor' in sys.argv:
-        return args[0]
-    if(len(args)==2):
-        return termcolor.colored(args[0], args[1])
-    if(len(args)==3):
-        return termcolor.colored(args[0], args[1], args[2])
+from src.podpFce import colored, BasicSetup
+from src.Kompilace import NalezeniKompilatoru, ZkompilujVse
 
 #ARGUMENTY
 vysledek = []
@@ -31,69 +13,9 @@ Exports = []
 
 Fail = 0
 
-for i, arg in enumerate(sys.argv):
-    sys.argv[i] = arg.lower()
-
-if "-cls" in sys.argv:
-    os.system('cls' if os.name=='nt' else 'clear')
-
-#KOMPILACE
-if not os.path.isfile("main.c"):
-    print(colored("nenalezen soubor \"main.c\"", "red"))
-    exit()
-
-clang_executable = find_executable('clang')
-gcc_executable = find_executable('gcc')
-compiler = None
-
-if gcc_executable == None and clang_executable == None:
-    print(colored("Nenealezen kompilátor (Clang / Gcc)"), "red")
-    exit()
-elif (gcc_executable != None) and "-forceclang" not in sys.argv:
-    print("Running on gcc")
-    compiler = "Gcc"
-else:
-    print("Running on Clang")
-    compiler = "Clang"
-
-if "-final" in sys.argv and compiler != "Clang":
-    with open("main.c", "r") as file:
-        if file.read()[-1] != "\n":
-            print(colored("Soubor main.c nekončí prázdným řádkem", "red"))
-            exit()
-
-cmd = [compiler, "main.c", "-o", "main.exe"]
-
-if '-nocolor' not in sys.argv:
-    if compiler == "Gcc":
-        cmd.append("-fdiagnostics-color=always")
-    if compiler == "Clang":
-        cmd += ["-fcolor-diagnostics", "-fansi-escape-codes"]
-
-if "-final" in sys.argv:
-    cmd += ["-pedantic", "-Wall", "-Werror", "-std=c99", "-O2"]
-
-proc = subprocess.Popen(cmd,
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE
-                        )
-
-stdout_value, stderr_value = proc.communicate()
-
-vystup = stderr_value.decode().replace("\r\n", "\n")
-print(vystup)
-if proc.returncode != 0:
-    print(colored("ERROR KOMPILACE", "red"))
-    exit()
-else:
-    if "warning:" in vystup:
-        print(colored("OK-Varování", "yellow", "on_magenta"))
-        Fail += 1
-    else:
-        print(colored("kompilace OK", "green"))
-
-print("\n")
+BasicSetup()
+compiler = NalezeniKompilatoru()
+ZkompilujVse(compiler)
 
 #config soubor
 if not os.path.isfile("./data/config.conf"):
@@ -125,7 +47,7 @@ def run(name, args):
         TIMEOUT = True
         Fail += 1
 
-    my_timer = Timer(5, kill, [proc])
+    my_timer = Timer(10, kill, [proc])
     try:
         my_timer.start()
         stdout_value, stderr_value = proc.communicate(data.encode())
@@ -417,3 +339,6 @@ if Fail == 0:
 
 if Fail >= 4:
     print(colored("\n\t(╯°□°）╯︵ ┻━┻", "red"))
+
+if "-keep" not in sys.argv:
+    os.remove("main.exe")
