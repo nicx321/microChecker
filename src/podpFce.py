@@ -4,6 +4,7 @@ import os
 istermcolor = True
 
 def BasicSetup():
+    global termcolor
     try:
         import termcolor  
     except ImportError:
