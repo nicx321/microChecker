@@ -1,7 +1,7 @@
 import sys
 from distutils.spawn import find_executable
 import subprocess
-from src.podpFce import colored
+from podpFce import colored
 
 def NalezeniKompilatoru():
     clang_executable = find_executable('clang')
@@ -10,7 +10,7 @@ def NalezeniKompilatoru():
 
     if gcc_executable == None and clang_executable == None:
         print(colored("Nenalezen kompilátor (Clang / Gcc)", "red"))
-        exit()
+        sys.exit()
     elif (gcc_executable != None) and "-forceclang" not in sys.argv:
         print("Kompilátor: gcc")
         compiler = "Gcc"
@@ -25,7 +25,7 @@ def NalezeniKompilatoru():
         with open("main.c", "r") as file:
             if file.read()[-1] != "\n":
                 print(colored("Soubor main.c nekončí prázdným řádkem", "red"))
-                exit()
+                sys.exit()
 
     return compiler
 
@@ -53,7 +53,7 @@ def ZkompilujVse(compiler):
     print(vystup)
     if proc.returncode != 0:
         print(colored("ERROR KOMPILACE", "red"))
-        exit()
+        sys.exit()
     else:
         if "warning:" in vystup:
             print(colored("OK-Varování", "yellow", "on_magenta"))
