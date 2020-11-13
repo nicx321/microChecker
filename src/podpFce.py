@@ -29,3 +29,25 @@ def colored(*args):
         return termcolor.colored(args[0], args[1])
     if(len(args)==3):
         return termcolor.colored(args[0], args[1], args[2])
+
+def generateConfigFile():
+    print("Zadejte návratovou hodnutu (celé číslo) jednotlivých testů,")
+    print("K jednotlivým testům můžet zadat i argumenty, nebo zanechte prázdný řádek")
+    names = []
+    out = ""
+    for file in os.listdir("./data/"):
+        if file.endswith(".in"):
+            names.append(file[:-3])
+    for name in names:
+        Ret = input("Návratová hodnota testu "+ name +": ")
+        try:
+            Ret = str(int(Ret))
+        except:
+            print("!!Návratová hodnota není číslo!!")
+            return
+        Args = input("argumenty testu "+ name +": ")
+        out += Ret + " " + Args + "\n"
+    file = open("./data/config.conf", "w")
+    file.write(out)
+    file.close()
+    print("Config vytvořen a uložen")

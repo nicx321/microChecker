@@ -16,18 +16,9 @@ Jednoduchý program pro testování programů v C
 1) nainstalujte gcc (nebo Clang)
 2) vytvořte hlavní složku projektu a vložte do ní soubory microChecker
 3) stáhněte soubory .in .out .err a vložte je do složky "data"
-4) (volitelné) ve složce "data" vytvořte soubor "config.conf" a na samostatné řádky vložte návratové hodnoty testů v pořadí pub01 -> pub02 -> pub03 -> ...
-    například:
+4) (volitelné) můžete přidat návratové hodnoty, a případné argumenty testovanému programu, pro porovnání. Toto nastavení provedete příkazem:
     ```
-    0
-	0
-	100
-    ```
-    Pokud potřebujete programu předávat argumenty. Přidejte je do souboru takto::
-    ```
-    0 arg1
-    0
-    100 arg1 arg2
+    .\microCheck.exe -config
     ```
 5) do hlavní složky přidejte váš "main.c", nebo upravte předvytvořený soubor.
 6) zapněte program v kompatibilní konzoli příkazem:
@@ -35,7 +26,8 @@ Jednoduchý program pro testování programů v C
     .\microCheck.exe
     ```
     (program je vytvářen v: [Windows Terminal](https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701))
-7) měli by jste vidět chybové hlášky gcc, nebo rozdíly ve výstupu vašeho programu vůči .out a .err, nebo zprávu OK.
+    (pokud vidíte v konzoli "divné znaky", zkuste program zapnout s dodatkem -nocolor)
+7) měli by jste vidět výstup kompilátoru, rozdíly ve výstupu vašeho programu vůči .out a .err, nebo zprávu OK.
 8) poté co vám funguje program. Můžete ho znova spustit s argumentem "-Final".
     ```
     .\microCheck.exe -Final

@@ -3,7 +3,7 @@ from threading import Timer
 import os
 import sys
 import pip
-from podpFce import colored, BasicSetup
+from podpFce import colored, BasicSetup, generateConfigFile
 from Kompilace import NalezeniKompilatoru, ZkompilujVse
 
 #ARGUMENTY
@@ -14,6 +14,11 @@ Exports = []
 Fail = 0
 
 BasicSetup()
+
+if "-config" in sys.argv:
+    generateConfigFile()
+    sys.exit()
+
 compiler = NalezeniKompilatoru()
 ZkompilujVse(compiler)
 
