@@ -20,6 +20,7 @@ Jednoduchý program pro testování programů v C
 
 ## Příprava projektu
 1) otevře složku vašeho projektu (s vaším .c souborem) a vytvořte složku "data":
+
 ![projekt](/src/Obrazky/projekt.png)
 2) stáhněte soubory .in .out .err a vložte je do složky "data"
 3) (volitelné) můžete přidat návratové hodnoty a případné argumenty testovanému programu pro kontrolu. Toto nastavení provedete příkazem:
