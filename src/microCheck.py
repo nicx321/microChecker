@@ -227,10 +227,14 @@ def cmpPrint(A, B, name, Datatype):
                 B_Hex.append("..")
             for i, char in enumerate(A):
                 A_Hex[i] = hex(ord(char))[2:]
+                if len(A_Hex[i]) == 1:
+                    A_Hex[i] = "0"+A_Hex[i]
             while (len(A_Hex))%width != 0:
                 A_Hex.append("  ")
             for i, char in enumerate(B):
                 B_Hex[i] = hex(ord(char))[2:]
+                if len(B_Hex[i]) == 1:
+                    B_Hex[i] = "0"+B_Hex[i]
             while (len(B_Hex))%width != 0:
                 B_Hex.append("  ")
             
@@ -261,6 +265,25 @@ def cmpPrint(A, B, name, Datatype):
                     print("\n", end="")
                     if i+1 != max(len(A_Hex), len(B_Hex)):
                         print('%04d' % (i+1)+": ", end="")
+        if "-readable" in sys.argv:
+            print("\n\nČitelná verze:\n-----------------------")
+            for i, c in enumerate(A):
+                if c == "\n":
+                    print(colored("n", "cyan"), end = "\n")
+                elif c == "\a":
+                    print(colored("a", "cyan"), end = "\a")
+                elif c == "\t":
+                    print(colored("t", "cyan"), end = "\t")
+                else:
+                    if i < len(B):
+                        if c != B[i]:
+                            print(colored(c, "red"), end="")
+                        else:
+                            print(c, end="")
+                    else:
+                        print(c, end="")
+            print("-----------------------")
+
         print("\n\n")
 
 def ErrHighLight(vysledek):
