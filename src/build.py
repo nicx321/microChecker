@@ -12,7 +12,7 @@ exe = Executable(
      )
 setup(
       name="microCheck",
-      version="9.0",
+      version="9.1",
       author="Jan Hamacek / nicx321",
       description="Nástroj pro kontrolu programů v C",
       executables=[exe],

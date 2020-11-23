@@ -40,6 +40,8 @@ def ZkompilujVse(compiler):
 
     if "-final" in sys.argv:
         cmd += ["-pedantic", "-Wall", "-Werror", "-std=c99", "-O2"]
+    else:
+        cmd += ["-g3"]
 
     proc = subprocess.Popen(cmd,
                             stdin=subprocess.PIPE,
