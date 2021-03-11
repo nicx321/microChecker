@@ -21,6 +21,13 @@ def BasicSetup():
 
     if "-cls" in sys.argv:
         os.system('cls' if os.name=='nt' else 'clear')
+    if "-pray" in sys.argv:
+        print(colored("""
+In the name of Faigl, K.N King, and clang the pedantic, let this code compile
+without errors, run without segmentation faults and free all the memory.
+We mortals beg you for optimal runtimes, and good valgrind results;
+Plese fix our memory leaks and optimize our code ;
+        """, "blue"))
 
 def colored(*args):
     if '-nocolor' in sys.argv or not istermcolor:
